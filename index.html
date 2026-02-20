@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>Gestor de Passwords</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+
+<link rel="icon" type="image/png" href="lock.png">
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f2f2f2;
+    padding: 20px;
+    background-image: url("password.jpg");
+}
+.container {
+    background: white;
+    padding: 20px;
+    max-width: 800px;
+    margin: auto;
+    border-radius: 8px;
+}
+input, textarea, button {
+    width: 100%;
+    padding: 8px;
+    margin-top: 8px;
+}
+button {
+    background: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+button:hover {
+    background: red;
+}
+.secondary {
+    background: #6c757d;
+}
+table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+th, td {
+    border: 1px solid #ccc;
+    padding: 6px;
+}
+th {
+    background: #eee;
+}
+tr.selected {
+    background-color: #cce5ff;
+}
+.hidden {
+    display: none;
+}
+/* ---------- MODAL ---------- */
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+}
+.modal-content h3 {
+    margin-top: 0;
+}
+.modal-content button {
+    margin-top: 10px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+    <h2>Gestor de Passwords</h2>
+
+    <input type="text" id="servico" placeholder="Serviço">
+    <input type="text" id="utilizador" placeholder="Utilizador">
+    <input type="password" id="password" placeholder="Password">
+    <textarea id="obs" placeholder="Observações"></textarea>
+
+    <button onclick="guardar()">Guardar</button>
+    <button class="secondary" onclick="toggleLista()">👁️ Mostrar lista</button>
+    <button class="secondary" onclick="togglePasswords()">🔒 Mostrar / Ocultar Passwords</button>
+
+    <button onclick="exportarExcel()">Exportar para Excel</button>
+
+    <table id="lista" class="hidden">
+        <thead>
+            <tr>
+                <th>Serviço</th>
+                <th>Utilizador</th>
+                <th>Password</th>
+                <th>Observações</th>
+            </tr>
+        </thead>
+        <tbody id="tabela"></tbody>
+    </table>
+</div>
+
+<!-- ---------- MODAL PASSWORD MESTRA ---------- -->
+    <div id="modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Password Mestra</h3>
+            <input type="password" id="masterInput" placeholder="Introduza a password">
+            <button onclick="confirmarPassword()">Confirmar</button>
+            <button class="secondary" onclick="fecharModal()">Cancelar</button>
+        </div>
+    </div>
+
+<script>
+let dados = JSON.parse(localStorage.getItem("passwords")) || [];
+let selecionado = null;
+let mostrarPasswords = false;
+let listaVisivel = false;
+
+/* ---------- PASSWORD MESTRA ---------- */
+let masterPassword = localStorage.getItem("masterPassword");
+let autenticado = false;
+let callbackAposAuth = null;
+
+function abrirModal(cb) {
+    callbackAposAuth = cb;
+    document.getElementById("masterInput").value = "";
+    document.getElementById("modal").classList.remove("hidden");
+    document.getElementById("masterInput").focus();
+}
+
+function fecharModal() {
+    document.getElementById("modal").classList.add("hidden");
+}
+
+function confirmarPassword() {
+    let valor = document.getElementById("masterInput").value;
+
+    if (!masterPassword) {
+        if (!valor) return alert("Defina uma password mestra");
+        localStorage.setItem("masterPassword", valor);
+        masterPassword = valor;
+        autenticado = true;
+    } else {
+        if (valor !== masterPassword) {
+            alert("Password incorreta");
+            return;
+        }
+        autenticado = true;
+    }
+
+    fecharModal();
+    if (callbackAposAuth) callbackAposAuth();
+}
+
+/* ---------- RENDER ---------- */
+function render() {
+    let tabela = document.getElementById("tabela");
+    tabela.innerHTML = "";
+    if (!listaVisivel) return;
+
+    dados.forEach((item, index) => {
+        let tr = document.createElement("tr");
+        if (index === selecionado) tr.classList.add("selected");
+
+        tr.onclick = () => selecionarLinha(index);
+        tr.ondblclick = () => editarLinha(index);
+
+        tr.innerHTML = `
+            <td>${item.servico}</td>
+            <td>${item.utilizador}</td>
+            <td>${mostrarPasswords && autenticado ? item.password : "••••••"}</td>
+            <td>${item.obs}</td>
+        `;
+        tabela.appendChild(tr);
+    });
+
+    localStorage.setItem("passwords", JSON.stringify(dados));
+}
+
+/* ---------- LISTA ---------- */
+function toggleLista() {
+    listaVisivel = !listaVisivel;
+    document.getElementById("lista").classList.toggle("hidden");
+    event.target.innerText = listaVisivel ? "🙈 Ocultar lista" : "👁️ Mostrar lista";
+    render();
+}
+
+/* ---------- PASSWORDS ---------- */
+function togglePasswords() {
+    if (!mostrarPasswords) {
+        // só pede password quando quer MOSTRAR
+        if (!autenticado) {
+            abrirModal(() => {
+                mostrarPasswords = true;
+                render();
+            });
+            return;
+        }
+    }
+    // ocultar não pede password
+    mostrarPasswords = !mostrarPasswords;
+    render();
+}
+
+/* ---------- CRUD ---------- */
+function selecionarLinha(i) { selecionado = i; render(); }
+
+function editarLinha(i) {
+    selecionado = i;
+    let d = dados[i];
+    servico.value = d.servico;
+    utilizador.value = d.utilizador;
+    password.value = d.password;
+    obs.value = d.obs;
+}
+
+function guardar() {
+    if (!servico.value || !utilizador.value || !password.value)
+        return alert("Preenche os campos obrigatórios");
+
+    let obj = {
+        servico: servico.value,
+        utilizador: utilizador.value,
+        password: password.value,
+        obs: obs.value
+    };
+
+    if (selecionado === null) dados.push(obj);
+    else dados[selecionado] = obj;
+
+    selecionado = null;
+    limpar();
+    render();
+}
+
+document.addEventListener("keydown", e => {
+    if (e.key === "Delete" && selecionado !== null && listaVisivel) {
+        if (confirm("Apagar o registo selecionado?")) {
+            dados.splice(selecionado, 1);
+            selecionado = null;
+            limpar();
+            render();
+        }
+    }
+});
+
+function limpar() {
+    servico.value = utilizador.value = password.value = obs.value = "";
+}
+
+function exportarExcel() {
+    let ws = XLSX.utils.json_to_sheet(dados);
+    let wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Passwords");
+    XLSX.writeFile(wb, "passwords.xlsx");
+}
+
+render();
+</script>
+</body>
+<footer style="text-align: right; margin-top: 350px; font-size: 24px; font-family: Brush Script MT; color: white;">Rui Baptista</footer>
+</html>
