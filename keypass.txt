@@ -1,0 +1,86 @@
+[
+    {
+        "servico": "Ajax",
+        "utilizador": "rbaptista@gmail.com",
+        "password": "Rui_Tec_!977",
+        "obs": ""
+    },
+    {
+        "servico": "Zabbix",
+        "utilizador": "Tec_3bs",
+        "password": "Tec_zabbix!",
+        "obs": ""
+    },
+    {
+        "servico": "Mycloudex2ultra.local",
+        "utilizador": "admin",
+        "password": "mt@i3bs.",
+        "obs": "substituir o user pela primeira letra do nome e o último nome (pessoal)."
+    },
+    {
+        "servico": "\\\\10.2.30.177",
+        "utilizador": "i3bs",
+        "password": "q3a9@i3bs$",
+        "obs": "Os mesmos dados para o Clonezilla"
+    },
+    {
+        "servico": "IWS v2020",
+        "utilizador": "avac",
+        "password": "gtc",
+        "obs": "Programa avac"
+    },
+    {
+        "servico": "3Bs Labs",
+        "utilizador": "rbaptista",
+        "password": "Carocha!977",
+        "obs": "Plataforma"
+    },
+    {
+        "servico": "Infraspeak",
+        "utilizador": "fribeiro@i3bs.uminho.pt",
+        "password": "opertec@i3bs.",
+        "obs": ""
+    },
+    {
+        "servico": "Office.services.xerox",
+        "utilizador": "rbaptista@3bs.pt",
+        "password": "Carocha0705!",
+        "obs": "Página das impressoras"
+    },
+    {
+        "servico": "Xerox Workplace Cloud Client",
+        "utilizador": "rbaptista@3bs.pt",
+        "password": "Tec-rui-@705",
+        "obs": "Para imprimir na cloud"
+    },
+    {
+        "servico": "Universidade do Minho",
+        "utilizador": "rui.baptista@i3bs.uminho.pt",
+        "password": "tec-uminho-Rui",
+        "obs": ""
+    },
+    {
+        "servico": "3Bs",
+        "utilizador": "rbaptista@3bs.pt",
+        "password": "Caroch@0705",
+        "obs": ""
+    },
+    {
+        "servico": "Mycloud",
+        "utilizador": "rbaptista",
+        "password": "tec-uminho-Rui",
+        "obs": "Para aceder aos ficheiros da minha pasta"
+    },
+    {
+        "servico": "No-IP",
+        "utilizador": "mglbap@gmail.com",
+        "password": "carocha1977",
+        "obs": ""
+    },
+    {
+        "servico": "Plenitude",
+        "utilizador": "218882890",
+        "password": "Carocha1977",
+        "obs": ""
+    }
+]
