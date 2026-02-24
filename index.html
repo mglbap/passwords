@@ -87,7 +87,8 @@ tr.selected {
     <button class="secondary" onclick="toggleLista()">👁️ Mostrar lista</button>
     <button class="secondary" onclick="togglePasswords()">🔒 Mostrar / Ocultar Passwords</button>
 
-    <button onclick="exportarExcel()">Exportar para Excel</button>
+    <button onclick="document.getElementById('importFile').click()">📥 Importar Excel</button>
+    <input type="file" id="importFile" accept=".xlsx" style="display:none">
 
     <table id="lista" class="hidden">
         <thead>
@@ -250,14 +251,45 @@ function limpar() {
     servico.value = utilizador.value = password.value = obs.value = "";
 }
 
-function exportarExcel() {
-    let ws = XLSX.utils.json_to_sheet(dados);
-    let wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Passwords");
-    XLSX.writeFile(wb, "passwords.xlsx");
-}
+document.getElementById("importFile").addEventListener("change", function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
 
-render();
+    const reader = new FileReader();
+
+    reader.onload = function(event) {
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+
+        const json = XLSX.utils.sheet_to_json(worksheet);
+
+        if (!json.length) {
+            alert("Ficheiro vazio ou formato inválido.");
+            return;
+        }
+
+        // Validar colunas obrigatórias
+        const colunas = Object.keys(json[0]);
+        if (!colunas.includes("servico") ||
+            !colunas.includes("utilizador") ||
+            !colunas.includes("password")) {
+            alert("O Excel deve ter as colunas: servico, utilizador, password, obs");
+            return;
+        }
+
+        dados = json;
+        selecionado = null;
+        localStorage.setItem("passwords", JSON.stringify(dados));
+        render();
+
+        alert("Importação concluída com sucesso!");
+    };
+
+    reader.readAsArrayBuffer(file);
+});
+
 </script>
 </body>
 <footer style="text-align: right; margin-top: 350px; font-size: 24px; font-family: Brush Script MT; color: white;">Rui Baptista</footer>
